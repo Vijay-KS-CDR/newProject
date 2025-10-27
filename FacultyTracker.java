@@ -92,6 +92,22 @@ public class FacultyTracker {
 
                             break;
                         case 3:
+                            System.out.println("Welcome Mr Admin----");
+                            String []DetName={"Name:","Department","Cabin"};
+                            String []details =new String[3];
+                            for(int i=0;i<details.length;i++) {
+                                System.out.println(DetName[i]);
+                                details[i] = sc.nextLine();
+                            }
+                            HashMap<Integer,String>a=new HashMap<>();
+                            for(int i=0;i<7;i++){
+                                System.out.print("period "+(i+1)+" Enter room number: ");
+                                String num= sc.nextLine();
+                                a.put(i+1,num);
+                                System.out.println();
+                            }
+                            System.out.println();
+                            facultyMap.put(details[0],new Faculty(details[0],details[1],details[2],true,a));
                             break;
                         default:
                             System.out.println("Wrong input❌.");
