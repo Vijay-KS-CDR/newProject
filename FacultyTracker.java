@@ -89,7 +89,22 @@ public class FacultyTracker {
                             }
                             break;
                         case 2:
-
+                            System.out.println("Enter the name of the faculty to update their details:");
+                            String temp=sc.nextLine();
+                            for(String tempName:facultyMap.keySet()){
+                                if(tempName.equalsIgnoreCase(temp)){
+                                    Faculty f3=facultyMap.get(tempName);
+                                    System.out.println("Update peroid");
+                                    HashMap<Integer,String> sched= (HashMap<Integer, String>) f3.periodRoom;
+                                    for(int i=1;i<=7;i++){
+                                        System.out.println("period"+i+":");
+                                        String rom=sc.next();
+                                        sched.put(i,rom);
+                                    }
+                                    System.out.println("Successfully updated✅");
+                                        break;
+                                }
+                            }
                             break;
                         case 3:
                             System.out.println("Welcome Mr Admin----");
@@ -108,6 +123,7 @@ public class FacultyTracker {
                             }
                             System.out.println();
                             facultyMap.put(details[0],new Faculty(details[0],details[1],details[2],true,a));
+                            System.out.println("Faculty added successfully✅");
                             break;
                         default:
                             System.out.println("Wrong input❌.");
