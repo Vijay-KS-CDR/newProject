@@ -1,11 +1,13 @@
+import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
+
 class Faculty {
     String name;
     String dept;
     String cabin;
     boolean present;
-    Map<Integer, String> periodRoom;  // period -> room number
+    Map<Integer, String> periodRoom;
 
     Faculty(String name, String dept, String cabin, boolean present, Map<Integer, String> periodRoom) {
         this.name = name;
@@ -15,160 +17,231 @@ class Faculty {
         this.periodRoom = periodRoom;
     }
 }
+
 public class FacultyTracker {
     public static void main(String[] args) {
+    List<String> days = List.of("monday", "tuesday", "wednesday", "thursday", "friday");
+    Map<String, Map<String, Faculty>> weeklySchedule = new HashMap<>();
         Scanner sc = new Scanner(System.in);
-
-        // --- Faculty Data ---
-        Map<Integer, String> VishalSchedule = new HashMap<>();
-        VishalSchedule.put(1, "201");
-        VishalSchedule.put(2, "202");
-        VishalSchedule.put(3, "203");
-        VishalSchedule.put(4, "204");
-        VishalSchedule.put(5, "205");
-        VishalSchedule.put(6, "206");
-        VishalSchedule.put(7, "207");
-
-        Map<Integer, String> anithaSchedule = new HashMap<>();
-        anithaSchedule.put(1, "108");
-        anithaSchedule.put(2, "110");
-        anithaSchedule.put(3, "112");
-        anithaSchedule.put(4, "114");
-        anithaSchedule.put(5, "116");
-        anithaSchedule.put(6, "118");
-        anithaSchedule.put(7, "120");
-
-        Map<Integer, String> rajkumarSchedule = new HashMap<>();
-        rajkumarSchedule.put(1, "101");
-        rajkumarSchedule.put(2, "102");
-        rajkumarSchedule.put(3, "103");
-        rajkumarSchedule.put(4, "104");
-        rajkumarSchedule.put(5, "105");
-        rajkumarSchedule.put(6, "106");
-        rajkumarSchedule.put(7, "107");
-
-        Map<String, Faculty> facultyMap = new HashMap<>();
-        facultyMap.put("Vishal", new Faculty("Vishal", "CSE", "226", true, VishalSchedule));
-        facultyMap.put("Anitha", new Faculty("Anitha", "IT", "215", false, anithaSchedule));
-        facultyMap.put("Rajkumar", new Faculty("Rajkumar", "ECE", "234", true, rajkumarSchedule));
+        for (String day : days) {
+            weeklySchedule.put(day, loadFacultyData(day.toLowerCase() + ".txt"));
+        }
         while (true) {
-            System.out.println("Login type:\n1.Admin\n2.user\n3.Exit");
+            System.out.println("\n=== Faculty Tracker ===");
+            System.out.println("1. Admin Login");
+            System.out.println("2. User Access");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
             int type = sc.nextInt();
             sc.nextLine();
+
             switch (type) {
-                case 1:
-                    System.out.println("Enter password:");
-                    String s = sc.nextLine();
-                    if (!s.equals("I am Admin1")) {
-                        System.out.println("Wrong password❌.");
+
+                // Admin;
+                case 1 -> {
+                    System.out.print("Enter Admin Password: ");
+                    String password = sc.nextLine();
+                    if (!password.equals("I am Admin1")) {
+                        System.out.println("❌ Wrong password!");
                         break;
                     }
-                    System.out.println("1.Update Attendance.");
-                    System.out.println("2.Update Details.");
-                    System.out.println("3.new Faculty");
+
+                    System.out.println("\n--- Admin Options ---");
+                    System.out.println("1. Update Attendance");
+                    System.out.println("2. Update Faculty Schedule");
+                    System.out.println("3. Add New Faculty");
+                    System.out.print("Enter option: ");
                     int option = sc.nextInt();
                     sc.nextLine();
+
                     switch (option) {
-                        case 1:
-                            for (Faculty atn : facultyMap.values()) {
-                                atn.present = true;
-                            }
-                            System.out.println("Enter absent facultys's names with comma seperated names:");
-                            String absentFaculty = sc.nextLine().trim();
-                            if (absentFaculty.isEmpty()) {
+
+                        // UPDATE ATTENDANCE
+                        case 1 -> {
+                            System.out.print("Enter Day (Monday–Friday): ");
+                            String day = sc.nextLine().trim().toLowerCase();
+                            Map<String, Faculty> facultyMap = weeklySchedule.get(day);
+                            if (facultyMap == null) {
+                                System.out.println("❌ Invalid day!");
                                 break;
                             }
-                            String[] saf /*(Seperated absent faculty)*/ = absentFaculty.split(",");
-                            for (int i = 0; i < saf.length; i++) {
-                                for (Map.Entry<String, Faculty> entries : facultyMap.entrySet()) {
-                                    if (saf[i].equalsIgnoreCase(entries.getKey())) {
-                                        Faculty f = entries.getValue();
-                                        f.present = false;
+
+                            for (Faculty f : facultyMap.values()) f.present = true;
+
+                            System.out.println("Enter absent faculty names (comma-separated): ");
+                            String absents = sc.nextLine().trim();
+
+                            if (!absents.isEmpty()) {
+                                String[] names = absents.split(",");
+                                for (Map.Entry<String, Faculty> entry : facultyMap.entrySet()) {
+                                    for (String name : names) {
+                                        if (entry.getKey().equalsIgnoreCase(name.trim())) {
+                                            entry.getValue().present = false;
+                                        }
                                     }
                                 }
                             }
-                            break;
-                        case 2:
-                            System.out.println("Enter the name of the faculty to update their details:");
-                            String temp=sc.nextLine();
-                            for(String tempName:facultyMap.keySet()){
-                                if(tempName.equalsIgnoreCase(temp)){
-                                    Faculty f3=facultyMap.get(tempName);
-                                    System.out.println("Update peroid");
-                                    HashMap<Integer,String> sched= (HashMap<Integer, String>) f3.periodRoom;
-                                    for(int i=1;i<=7;i++){
-                                        System.out.println("period"+i+":");
-                                        String rom=sc.next();
-                                        sched.put(i,rom);
-                                    }
-                                    System.out.println("Successfully updated✅");
-                                        break;
-                                }
+
+                            saveFacultyData(day.toLowerCase() + ".txt", facultyMap);
+                            System.out.println("✅ Attendance updated for " + day);
+                        }
+
+                        // update
+                        case 2 -> {
+                            System.out.print("Enter Day: ");
+                            String day = sc.nextLine().trim().toLowerCase();
+                            Map<String, Faculty> facultyMap = weeklySchedule.get(day);
+                            if (facultyMap == null) {
+                                System.out.println("❌ Invalid day!");
+                                break;
                             }
-                            break;
-                        case 3:
-                            System.out.println("Welcome Mr Admin----");
-                            String []DetName={"Name:","Department","Cabin"};
-                            String []details =new String[3];
-                            for(int i=0;i<details.length;i++) {
-                                System.out.println(DetName[i]);
-                                details[i] = sc.nextLine();
+
+                            System.out.print("Enter faculty name to update: ");
+                            String name = sc.nextLine().trim();
+                            Faculty faculty = facultyMap.get(name);
+
+                            if (faculty == null) {
+                                System.out.println("❌ Faculty not found!");
+                                break;
                             }
-                            HashMap<Integer,String>a=new HashMap<>();
-                            for(int i=0;i<7;i++){
-                                System.out.print("period "+(i+1)+" Enter room number: ");
-                                String num= sc.nextLine();
-                                a.put(i+1,num);
-                                System.out.println();
+
+                            System.out.println("Enter 7 new room numbers:");
+                            for (int i = 1; i <= 7; i++) {
+                                System.out.print("Period " + i + ": ");
+                                faculty.periodRoom.put(i, sc.nextLine());
                             }
-                            System.out.println();
-                            facultyMap.put(details[0],new Faculty(details[0],details[1],details[2],true,a));
-                            System.out.println("Faculty added successfully✅");
-                            break;
-                        default:
-                            System.out.println("Wrong input❌.");
+
+                            saveFacultyData(day.toLowerCase() + ".txt", facultyMap);
+                            System.out.println("✅ Updated successfully for " + faculty.name);
+                        }
+
+                        //new faculty
+                        case 3 -> {
+                            System.out.print("Enter Day: ");
+                            String day = sc.nextLine().trim().toLowerCase();
+                            Map<String, Faculty> facultyMap = weeklySchedule.get(day);
+                            if (facultyMap == null) {
+                                System.out.println("❌ Invalid day!");
+                                break;
+                            }
+
+                            System.out.print("Enter Name: ");
+                            String name = sc.nextLine();
+                            System.out.print("Enter Department: ");
+                            String dept = sc.nextLine();
+                            System.out.print("Enter Cabin: ");
+                            String cabin = sc.nextLine();
+
+                            Map<Integer, String> schedule = new HashMap<>();
+                            for (int i = 1; i <= 7; i++) {
+                                System.out.print("Room for Period " + i + ": ");
+                                schedule.put(i, sc.nextLine());
+                            }
+
+                            facultyMap.put(name, new Faculty(name, dept, cabin, true, schedule));
+                            saveFacultyData(day.toLowerCase() + ".txt", facultyMap);
+                            System.out.println("✅ New faculty added for " + day);
+                        }
+
+                        default -> System.out.println("❌ Wrong input!");
                     }
-                    break;
-                case 2:
-                    // --- User Input --
+                }
+
+                //user
+                case 2 -> {
+                    System.out.print("Enter Day (Monday–Friday): ");
+                    String day = sc.nextLine().trim().toLowerCase();
+                    Map<String, Faculty> facultyMap = weeklySchedule.get(day);
+
+                    if (facultyMap == null) {
+                        System.out.println("❌ Invalid day!");
+                        break;
+                    }
+
                     System.out.print("Enter Faculty Name: ");
-                    String inputName = sc.nextLine().trim();
-
-                    System.out.print("Enter Period (1-7): ");
+                    String name = sc.nextLine().trim();
+                    System.out.print("Enter Period (1–7): ");
                     int period = sc.nextInt();
+                    sc.nextLine();
 
-                    // --- Lookup ---
-                    Faculty f = null;
+                    Faculty faculty = null;
                     for (String key : facultyMap.keySet()) {
-                        if (key.equalsIgnoreCase(inputName)) {
-                            f = facultyMap.get(key);
+                        if (key.equalsIgnoreCase(name)) {
+                            faculty = facultyMap.get(key);
                             break;
                         }
                     }
-                    LocalDate today = LocalDate.now(); // current date
 
+                    LocalDate today = LocalDate.now();
                     System.out.println("\nDate: " + today);
-                    if (f != null) {
-                        System.out.println(f.name + " " + f.dept);
-                        System.out.println("Cabin: " + f.cabin);
-                        System.out.println("Status: " + (f.present ? "✅Present" : "❌Absent"));
 
-                        String room = f.periodRoom.get(period);
-                        if (room != null) {
-                            System.out.println("Current in: " + room);
-                        } else {
-                            System.out.println("No Wrong period number❌.");
-                        }
+                    if (faculty != null) {
+                        System.out.println("Name: " + faculty.name + " | Dept: " + faculty.dept);
+                        System.out.println("Cabin: " + faculty.cabin);
+                        System.out.println("Status: " + (faculty.present ? "✅ Present" : "❌ Absent"));
+                        System.out.println("Current Room: " + faculty.periodRoom.getOrDefault(period, "N/A"));
                     } else {
-                        System.out.println("Faculty not found❌");
+                        System.out.println("❌ Faculty not found!");
                     }
-                    break;
-                case 3:
+                }
+                //exit;
+                case 3 -> {
+                    for (String day : days) {
+                        saveFacultyData(day.toLowerCase() + ".txt", weeklySchedule.get(day));
+                    }
+                    System.out.println("All data saved ✅ Exiting...");
                     return;
+                }
 
-                default:
-                    System.out.println("Wrong input.");
+                default -> System.out.println("❌ Wrong input!");
             }
+        }
+    }
+
+    static Map<String, Faculty> loadFacultyData(String fileName) {
+        Map<String, Faculty> map = new HashMap<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length != 5) continue;
+
+                String name = parts[0];
+                String dept = parts[1];
+                String cabin = parts[2];
+                boolean present = Boolean.parseBoolean(parts[3]);
+                String[] rooms = parts[4].split("-");
+
+                Map<Integer, String> periodRoom = new HashMap<>();
+                for (int i = 0; i < rooms.length; i++) {
+                    periodRoom.put(i + 1, rooms[i]);
+                }
+
+                map.put(name, new Faculty(name, dept, cabin, present, periodRoom));
+            }
+
+        } catch (IOException e) {
+            System.out.println(" File Missing❌" + fileName);
+        }
+
+        return map;
+    }
+
+    static void saveFacultyData(String fileName, Map<String, Faculty> map) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            for (Faculty f : map.values()) {
+                bw.write(f.name + "," + f.dept + "," + f.cabin + "," + f.present + ",");
+                for (int i = 1; i <= 7; i++) {
+                    bw.write(f.periodRoom.get(i));
+                    if (i < 7) bw.write("-");
+                }
+                bw.newLine();
+            }
+
+        } catch (IOException e) {
+            System.out.println("❌ Error saving " + fileName);
         }
     }
 }
