@@ -24,7 +24,7 @@ public class FacultyTracker {
     Map<String, Map<String, Faculty>> weeklySchedule = new HashMap<>();
         Scanner sc = new Scanner(System.in);
         for (String day : days) {
-            weeklySchedule.put(day, loadFacultyData(day.toLowerCase() + ".txt"));
+            weeklySchedule.put(day, loadFacultyData(day.toLowerCase()+ ".txt"));
         }
         while (true) {
             System.out.println("\n=== Faculty Tracker ===");
@@ -58,15 +58,17 @@ public class FacultyTracker {
 
                         // UPDATE ATTENDANCE
                         case 1 -> {
-                            System.out.print("Enter Day (Monday–Friday): ");
-                            String day = sc.nextLine().trim().toLowerCase();
+                            System.out.print("Operating on today:");
+                            String day = LocalDate.now().getDayOfWeek().toString().toLowerCase();
                             Map<String, Faculty> facultyMap = weeklySchedule.get(day);
                             if (facultyMap == null) {
                                 System.out.println("❌ Invalid day!");
                                 break;
                             }
 
-                            for (Faculty f : facultyMap.values()) f.present = true;
+                            for (Faculty f : facultyMap.values()){
+                                f.present = true;
+                            }
 
                             System.out.println("Enter absent faculty names (comma-separated): ");
                             String absents = sc.nextLine().trim();
@@ -83,7 +85,7 @@ public class FacultyTracker {
                             }
 
                             saveFacultyData(day.toLowerCase() + ".txt", facultyMap);
-                            System.out.println("✅ Attendance updated for " + day);
+                            System.out.println("✅ Attendance updated for " + LocalDate.now().getDayOfWeek());
                         }
 
                         // update
@@ -108,7 +110,8 @@ public class FacultyTracker {
                             System.out.println("Enter 7 new room numbers:");
                             for (int i = 1; i <= 7; i++) {
                                 System.out.print("Period " + i + ": ");
-                                faculty.periodRoom.put(i, sc.nextLine());
+                                String prom=sc.nextLine().trim();
+                                faculty.periodRoom.put(i, prom);
                             }
 
                             saveFacultyData(day.toLowerCase() + ".txt", facultyMap);
@@ -117,16 +120,11 @@ public class FacultyTracker {
 
                         //new faculty
                         case 3 -> {
-                            System.out.print("Enter Day: ");
-                            String day = sc.nextLine().trim().toLowerCase();
-                            Map<String, Faculty> facultyMap = weeklySchedule.get(day);
-                            if (facultyMap == null) {
-                                System.out.println("❌ Invalid day!");
-                                break;
-                            }
 
                             System.out.print("Enter Name: ");
-                            String name = sc.nextLine();
+
+                            String name = sc.nextLine().trim();
+                            name=name.substring(0,1).toUpperCase()+name.substring(1).toLowerCase();
                             System.out.print("Enter Department: ");
                             String dept = sc.nextLine();
                             System.out.print("Enter Cabin: ");
@@ -138,9 +136,13 @@ public class FacultyTracker {
                                 schedule.put(i, sc.nextLine());
                             }
 
-                            facultyMap.put(name, new Faculty(name, dept, cabin, true, schedule));
-                            saveFacultyData(day.toLowerCase() + ".txt", facultyMap);
-                            System.out.println("✅ New faculty added for " + day);
+                            for(String day:days) {
+                                Map<String,Faculty> map1=weeklySchedule.get(day);
+                                map1.put(name,new Faculty(name,dept,cabin,true,new HashMap<>(schedule)));
+                                saveFacultyData(day.toLowerCase() + ".txt", map1);
+                            }
+                            System.out.println("✅ New faculty added for all days");
+
                         }
 
                         default -> System.out.println("❌ Wrong input!");
@@ -178,7 +180,9 @@ public class FacultyTracker {
                     if (faculty != null) {
                         System.out.println("Name: " + faculty.name + " | Dept: " + faculty.dept);
                         System.out.println("Cabin: " + faculty.cabin);
-                        System.out.println("Status: " + (faculty.present ? "✅ Present" : "❌ Absent"));
+                        if(day.equalsIgnoreCase(LocalDate.now().getDayOfWeek().toString())){
+                            System.out.println("Status: " + (faculty.present ? "✅ Present" : "❌ Absent"));
+                        }
                         System.out.println("Current Room: " + faculty.periodRoom.getOrDefault(period, "N/A"));
                     } else {
                         System.out.println("❌ Faculty not found!");
