@@ -113,7 +113,7 @@ class UserFrame extends Frame implements ActionListener {
         sb.append("Dept: ").append(faculty.dept).append("\n");
         sb.append("Cabin: ").append(faculty.cabin).append("\n");
 
-        if (day.equalsIgnoreCase("monday")) {
+        if (day.equalsIgnoreCase(LocalDate.now().getDayOfWeek().toString())){
             sb.append("Status: ").append(faculty.present ? "✅ Present" : "❌ Absent").append("\n");
         }
 
@@ -255,7 +255,7 @@ public class FacultyTracker {
         }
     }
 
-    // ===== LOAD DATA =====
+    // LOAD DATA
     static Map<String, Faculty> loadFacultyData(String fileName) {
         Map<String, Faculty> map = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
@@ -281,7 +281,7 @@ public class FacultyTracker {
         return map;
     }
 
-    // ===== SAVE DATA =====
+    // SAVE DATA
     static void saveFacultyData(String fileName, Map<String, Faculty> map) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
             for (Faculty f : map.values()) {
