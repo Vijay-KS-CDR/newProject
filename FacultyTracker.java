@@ -79,6 +79,9 @@ class UserFrame extends Frame implements ActionListener {
 
         try {
             period = Integer.parseInt(periodField.getText().trim());
+            if (period < 1 || period > 7) {
+               throw new NumberFormatException();
+            }
         } catch (NumberFormatException ex) {
             resultArea.setText("❌ Invalid period! Enter a number (1–7).");
             return;
@@ -110,7 +113,7 @@ class UserFrame extends Frame implements ActionListener {
         sb.append("Dept: ").append(faculty.dept).append("\n");
         sb.append("Cabin: ").append(faculty.cabin).append("\n");
 
-        if (day.equalsIgnoreCase(today.getDayOfWeek().toString().toLowerCase())) {
+        if (day.equalsIgnoreCase("monday")) {
             sb.append("Status: ").append(faculty.present ? "✅ Present" : "❌ Absent").append("\n");
         }
 
